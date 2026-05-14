@@ -8,11 +8,11 @@ const router = express.Router();
 // This route will get all subjects with optional search query, filtering, and pagination
 router.get("/", async (req, res) => {
     try {
-        const { search, department, page = 1, limit = 10 } = req.query
-
-        const currentPage = Math.max(1, +page)
-        const limitPerPage = Math.max(1, +limit)
-
+                const { search, department, page = "1", limit = "10" } = req.query
+        const parsedPage = Number.parseInt(String(page), 10)
+        const parsedLimit = Number.parseInt(String(limit), 10)
+        const currentPage = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1
+        const limitPerPage = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 10
         const offset = (currentPage - 1) * limitPerPage
 
         const filterConditions = []
@@ -21,8 +21,8 @@ router.get("/", async (req, res) => {
         if (search) {
             filterConditions.push(
                 or(
-                    ilike(subjects.name, "%${search}%"),
-                    ilike(subjects.code, "%${search}%")
+                    ilike(subjects.name, `%${search}%`),
+                    ilike(subjects.code, `%${search}%`)
                 )
             )
         }
@@ -31,7 +31,7 @@ router.get("/", async (req, res) => {
         if (department) {
             filterConditions.push(
                 or(
-                    ilike(departments.name, "%${search}%"),
+                    ilike(departments.name, `%${department}%`),
                 )
             )
         }
